@@ -1,5 +1,7 @@
 FROM nvidia/cuda:12.1.0-base-ubuntu22.04 
 
+ENV PIP_DEFAULT_TIMEOUT=1200
+
 RUN apt-get update -y \
     && apt-get install -y python3-pip
 
@@ -36,6 +38,7 @@ ENV MODEL_NAME=$MODEL_NAME \
 
 ENV PYTHONPATH="/:/vllm-workspace"
 
+RUN python3 -m pip install cryptography==41.0.7
 
 COPY src /src
 RUN --mount=type=secret,id=HF_TOKEN,required=false \
