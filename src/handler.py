@@ -9,6 +9,7 @@ from engine import vLLMEngine, OpenAIvLLMEngine
 vllm_engine = vLLMEngine()
 OpenAIvLLMEngine = OpenAIvLLMEngine(vllm_engine)
 
+# Prev worker: runpod/worker-v1-vllm:v1.2.0stable-cuda12.1.0
 
 encryption_key = os.getenv("ENCRYPTION_KEY")
 if encryption_key is None:
@@ -25,6 +26,7 @@ async def handler(job):
             return
 
         prompt = json.loads(encryption_handler.decrypt(prompt))
+        print("Decoded", prompt)
     else:
         prompt = job["input"]
 
@@ -33,8 +35,9 @@ async def handler(job):
     engine = OpenAIvLLMEngine if job_input.openai_route else vllm_engine
     results_generator = engine.generate(job_input)
     async for batch in results_generator:
+        print("Got batch", batch)
         if encryption_handler is not None:
-            yield {"encrypted": encryption_handler.encrypt(json.dumps(batch))}
+            yield {"encrypted": encryption_handler.encrypt(json.dumps({"data": batch}))}
         else:
             yield batch
 
