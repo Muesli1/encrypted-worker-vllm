@@ -18,10 +18,16 @@ else:
     encryption_handler = EncryptionHandler(encryption_key)
 
 async def handler(job):
-    if encryption_handler is not None:
-        prompt = job["input"].get('encrypted', False)
+    job_input = JobInput(job["input"])
 
+    if encryption_handler is not None:
         print("Got input", job["input"])
+
+        if job_input.openai_route:
+            prompt = job["input"]["openai_input"].get('encrypted', False)
+        else:
+            prompt = job["input"].get('encrypted', False)
+
         print("Got prompt", prompt)
         if prompt is None:
             yield {'error': 'Missing "encrypted" key in input!'}
@@ -30,12 +36,16 @@ async def handler(job):
         print("Decoding", prompt)
         print("Decoded", encryption_handler.decrypt(prompt))
         print("Loading json")
-        prompt = json.loads(encryption_handler.decrypt(prompt))
-        print("Decoded", prompt)
-    else:
-        prompt = job["input"]
+        json_prompt = json.loads(encryption_handler.decrypt(prompt))
+        print("Decoded", json_prompt)
 
-    job_input = JobInput(prompt)
+        if job_input.openai_route:
+            job_input = JobInput({**job["input"], "openai_input": json_prompt})
+        else:
+            job_input = JobInput(json_prompt)
+
+        print("Reconstructed", job_input)
+
 
     engine = OpenAIvLLMEngine if job_input.openai_route else vllm_engine
     results_generator = engine.generate(job_input)
