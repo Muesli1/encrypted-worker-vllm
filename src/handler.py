@@ -21,7 +21,9 @@ async def handler(job):
     if encryption_handler is not None:
         prompt = job["input"].get('encrypted', False)
 
-        if not prompt:
+        print("Got input", job["input"])
+        print("Got prompt", prompt)
+        if prompt is None:
             yield {'error': 'Missing "encrypted" key in input!'}
             return
 
