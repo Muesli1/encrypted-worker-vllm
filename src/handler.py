@@ -25,6 +25,9 @@ async def handler(job):
             yield {'error': 'Missing "encrypted" key in input!'}
             return
 
+        print("Decoding", prompt)
+        print("Decoded", encryption_handler.decrypt(prompt))
+        print("Loading json")
         prompt = json.loads(encryption_handler.decrypt(prompt))
         print("Decoded", prompt)
     else:
