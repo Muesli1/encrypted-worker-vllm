@@ -9,13 +9,12 @@ RUN ldconfig /usr/local/cuda-12.1/compat/
 
 # Install Python dependencies
 COPY builder/requirements.txt /requirements.txt
-RUN --mount=type=cache,target=/root/.cache/pip \
-    python3 -m pip install --upgrade pip && \
-    python3 -m pip install --upgrade -r /requirements.txt
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade -r /requirements.txt
 
 # Install vLLM (switching back to pip installs since issues that required building fork are fixed and space optimization is not as important since caching) and FlashInfer 
-RUN python3 -m pip install vllm==0.6.3 && \
-    python3 -m pip install flashinfer -i https://flashinfer.ai/whl/cu121/torch2.3
+RUN python3 -m pip install vllm==0.6.3
+RUN python3 -m pip install flashinfer -i https://flashinfer.ai/whl/cu121/torch2.3
 
 # Setup for Option 2: Building the Image with the Model included
 ARG MODEL_NAME=""
@@ -40,7 +39,9 @@ ENV PYTHONPATH="/:/vllm-workspace"
 
 RUN python3 -m pip install cryptography==41.0.7
 
-COPY src /src
+# Copy the download script separately
+COPY src/download_model.py /src/download_model.py
+
 RUN --mount=type=secret,id=HF_TOKEN,required=false \
     if [ -f /run/secrets/HF_TOKEN ]; then \
         export HF_TOKEN=$(cat /run/secrets/HF_TOKEN); \
@@ -48,6 +49,8 @@ RUN --mount=type=secret,id=HF_TOKEN,required=false \
     if [ -n "$MODEL_NAME" ]; then \
         python3 /src/download_model.py; \
     fi
+
+COPY src /src
 
 # Start the handler
 CMD ["python3", "/src/handler.py"]
