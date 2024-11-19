@@ -9,8 +9,8 @@ RUN ldconfig /usr/local/cuda-12.1/compat/
 
 # Install Python dependencies
 COPY builder/requirements.txt /requirements.txt
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install --upgrade -r /requirements.txt
+# RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install -r /requirements.txt
 
 # Install vLLM (switching back to pip installs since issues that required building fork are fixed and space optimization is not as important since caching) and FlashInfer 
 RUN python3 -m pip install vllm==0.6.3
