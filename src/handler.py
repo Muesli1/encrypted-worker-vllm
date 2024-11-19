@@ -53,7 +53,11 @@ async def handler(job):
     async for batch in results_generator:
         # print("Got batch", batch)
         if encryption_handler is not None:
-            yield {"encrypted": encryption_handler.encrypt(json.dumps({"data": batch}))}
+            encrypted_json = {"encrypted": encryption_handler.encrypt(json.dumps({"data": batch}))}
+            if batch is str:
+                yield json.dumps(encrypted_json) + "\n\n"
+            else:
+                yield encrypted_json
         else:
             yield batch
 
