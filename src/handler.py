@@ -24,7 +24,7 @@ async def handler(job):
         print("Got input", job["input"])
 
         if job_input.openai_route:
-            prompt = job["input"]["openai_input"].get('encrypted', False)
+            prompt = job_input.openai_input["encrypted"]
         else:
             prompt = job["input"].get('encrypted', False)
 
