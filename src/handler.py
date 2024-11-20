@@ -50,14 +50,17 @@ async def handler(job):
 
     engine = OpenAIvLLMEngine if job_input.openai_route else vllm_engine
     results_generator = engine.generate(job_input)
+
     async for batch in results_generator:
-        # print("Got batch", batch)
+        print("Got batch", "type", type(batch), "= STARTBATCH", batch,"ENDBATCH")
         if encryption_handler is not None:
             encrypted_json = {"encrypted": encryption_handler.encrypt(json.dumps({"data": batch}))}
-            if batch is str:
-                yield json.dumps(encrypted_json) + "\n\n"
+            if isinstance(batch, str):
+                print("Yield string STARTYIELD'" + (json.dumps(encrypted_json) + "\n\n") + "'ENDYIELD")
+                yield "data: " + json.dumps(encrypted_json) + "\n"
             else:
-                yield encrypted_json
+                print("Yield json STARTYIELD", encrypted_json, "ENDYIELD")
+                yield "data: " + json.dumps(encrypted_json) + "\n"
         else:
             yield batch
 
